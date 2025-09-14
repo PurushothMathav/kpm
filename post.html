@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Movie Details</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="index.html">Home</a> | 
+      <a href="tags.html">Tags</a> | 
+      <a href="actors.html">Actors</a>
+    </nav>
+  </header>
+
+  <main>
+    <div id="post-container"></div>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const postId = params.get("id");
+    if (postId) {
+      loadPost(postId);
+    }
+  </script>
+</body>
+</html>

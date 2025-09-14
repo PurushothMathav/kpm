@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Korean Movies</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="index.html">Home</a> | 
+      <a href="tags.html">Tags</a> | 
+      <a href="actors.html">Actors</a>
+    </nav>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Search movies...">
+      <button onclick="searchPosts()">Search</button>
+    </div>
+  </header>
+
+  <main>
+    <h2>Latest Videos</h2>
+    <div id="results" class="results"></div>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("tag")) {
+      filterByTag(params.get("tag"), "Selected Tag");
+    } else if (params.get("actor")) {
+      filterByActor(params.get("actor"), "Selected Actor");
+    } else {
+      loadPosts();
+    }
+  </script>
+</body>
+</html>
