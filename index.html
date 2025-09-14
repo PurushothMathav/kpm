@@ -2,19 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Korean Movies</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
   <header>
-    <nav>
-      <a href="index.html">Home</a> | 
-      <a href="tags.html">Tags</a> | 
-      <a href="actors.html">Actors</a>
-    </nav>
+    <div class="header-container">
+      <a href="index.html" class="logo">
+		<img src="https://koreanpornmovie.com/wp-content/uploads/2025/01/sadasdasdasdas.png" alt="Korean Movies" class="logo-img">
+	  </a>
+      <button class="menu-toggle" id="menuToggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav class="nav-menu" id="navMenu">
+        <a href="index.html">Home</a>
+        <a href="tags.html">Tags</a>
+        <a href="actors.html">Actors</a>
+      </nav>
+    </div>
     <div class="search-box">
       <input type="text" id="searchInput" placeholder="Search movies...">
-      <button onclick="searchPosts()">Search</button>
+      <button onclick="searchPosts()">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </button>
     </div>
   </header>
 
@@ -25,6 +39,24 @@
 
   <script src="app.js"></script>
   <script>
+    // Mobile menu toggle
+    const menuToggle = document.getElementById('menuToggle');
+    const navMenu = document.getElementById('navMenu');
+    
+    menuToggle.addEventListener('click', () => {
+      navMenu.classList.toggle('active');
+      menuToggle.classList.toggle('active');
+    });
+
+    // Close menu when clicking on a link
+    navMenu.addEventListener('click', (e) => {
+      if (e.target.tagName === 'A') {
+        navMenu.classList.remove('active');
+        menuToggle.classList.remove('active');
+      }
+    });
+
+    // URL parameters handling
     const params = new URLSearchParams(window.location.search);
     if (params.get("tag")) {
       filterByTag(params.get("tag"), "Selected Tag");
