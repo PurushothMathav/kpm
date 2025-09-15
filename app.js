@@ -431,43 +431,68 @@ async function loadPost(id) {
   }
 }
 
+// normalize en dash/em dash/minus to plain hyphen
+function normalizeDashes(str) {
+  return str.replace(/[–—−]/g, "-");
+}
+
+// capitalize only the first letter after a hyphen, keep the rest
+function capitalizeAfterHyphen(str) {
+  return str.replace(/(\w)-(\w)/g, (_, a, b) => a + "-" + b.toUpperCase());
+}
+
+// encode but keep -, _, &
+function safeEncode(str) {
+  return encodeURIComponent(str)
+    .replace(/%2D/g, "-")  // keep -
+    .replace(/%5F/g, "_")  // keep _
+    .replace(/%26/g, "&"); // keep &
+}
+
 function renderPost(post) {
   const container = document.getElementById("post-container");
 
-  // Decode HTML entities and clean tags
-  let title = decodeHtmlEntities(post.title.rendered.replace(/<\/?[^>]+(>|$)/g, ""));
+  // Decode and clean title
+  let rawTitle = decodeHtmlEntities(post.title.rendered.replace(/<\/?[^>]+(>|$)/g, ""));
+  rawTitle = normalizeDashes(rawTitle);
 
-  // First attempt: replace smart apostrophe with ASCII apostrophe
-  let asciiSafeTitle = title
-    .replace(/’/g, "'")
-    .replace(/ /g, '%20');
+  // Apostrophe handling
+  let asciiTitle = rawTitle.replace(/’/g, "'");
+  let smartTitle = rawTitle.replace(/'/g, "\u2019");
 
-  // Fallback: force smart apostrophe → %E2%80%99
-  let smartSafeTitle = title
-    .replace(/ /g, '%20')
-    .replace(/’/g, '%E2%80%99');
+  // 1st try: encoded as-is
+  let firstUrl = `https://koreanporn.stream/${safeEncode(asciiTitle)}.mp4`;
 
-  const firstUrl = `https://koreanporn.stream/${asciiSafeTitle}.mp4`;
-  const fallbackUrl = `https://koreanporn.stream/${smartSafeTitle}.mp4`;
+  // 2nd try: hyphen fallback (capitalize after -)
+  let hyphenFallbackUrl = `https://koreanporn.stream/${safeEncode(capitalizeAfterHyphen(asciiTitle))}.mp4`;
+
+  // 3rd try: smart apostrophe fallback
+  let smartFallbackUrl = `https://koreanporn.stream/${safeEncode(smartTitle)}.mp4`;
 
   container.innerHTML = `
-    <h2>${title}</h2>
-    <video id="video-player" controls preload="metadata" style="width: 100%; max-height: 500px; border-radius: 10px;">
+    <h2>${rawTitle}</h2>
+    <video id="video-player" controls preload="metadata" style="width:100%;max-height:500px;border-radius:10px;">
       <source id="video-source" src="${firstUrl}" type="video/mp4">
       Your browser does not support the video tag.
     </video>
-    <div style="margin-top: 20px;">${post.content.rendered}</div>
+    <div style="margin-top:20px;">${post.content.rendered}</div>
   `;
 
   const video = document.getElementById("video-player");
   const source = document.getElementById("video-source");
 
-  // Attach error handler to the <source>
+  // try fallbacks in sequence
+  let tried = 0;
+  const urls = [hyphenFallbackUrl, smartFallbackUrl];
+
   source.addEventListener("error", () => {
-    console.warn("First URL failed, trying fallback:", fallbackUrl);
-    source.src = fallbackUrl;
-    video.load();
-    video.play().catch(() => {}); // prevent autoplay block error
+    if (tried < urls.length) {
+      const nextUrl = urls[tried++];
+      console.warn("Trying fallback:", nextUrl);
+      source.src = nextUrl;
+      video.load();
+      video.play().catch(() => {});
+    }
   });
 }
 
